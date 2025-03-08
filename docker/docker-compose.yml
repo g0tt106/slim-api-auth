@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  application:
+    build:
+      context: "."
+      dockerfile: Dockerfile
+    container_name: app-crud
+    restart: always
+    working_dir: /var/www/
+    volumes:
+      - ../:/var/www
+
+  web-server:
+    image: nginx:stable-perl
+    container_name: web-server-crud
+    restart: always
+    ports:
+      - "8000:80"
+    volumes:
+      - ../:/var/www
+      - ./nginx:/etc/nginx/conf.d
+
+  database:
+    container_name: database-crud
+    image: mysql:8.0.41-debian
+    volumes:
+      - ./storage/mysql:/var/lib/mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3306:3306"
