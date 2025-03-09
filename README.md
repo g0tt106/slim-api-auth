@@ -1,1 +1,1 @@
-# slim-rest-api
+# slim-api-auth
