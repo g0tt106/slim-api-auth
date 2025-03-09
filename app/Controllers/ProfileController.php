@@ -4,54 +4,28 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
-use App\Repositories\ProductRepository;
-use App\Repositories\UserRepository;
+use Defuse\Crypto\Crypto;
+use Defuse\Crypto\Key;
 use Slim\Psr7\Request;
 use Slim\Psr7\Response;
 use Slim\Views\PhpRenderer;
-use Valitron\Validator;
 
 class ProfileController
 {
-    public function __construct(
-        private readonly PhpRenderer $view,
-        private UserRepository $repository
-    )
+    public function __construct(private PhpRenderer $view)
     {
     }
 
-    public function new(Request $request , Response $response): Response
+    public function show(Request $request, Response $response): Response
     {
-        return $this->view->render($response, 'login.php');
-    }
+        $user = $request->getAttribute('user');
 
-    public function create(Request $request, Response $response): Response
-    {
-        $data = $request->getParsedBody();
+        $encryption_key = Key::loadFromAsciiSafeString($_ENV['ENCRYPTION_KEY']);
 
-        $user = $this->repository->find('email', $data['email']);
+        $api_key = Crypto::decrypt($user['api_key'], $encryption_key);
 
-        if ($user && password_verify($data['password'], $user['password_hash'])) {
-
-            $_SESSION['user_id'] = $user['id'];
-
-            return $response
-                ->withHeader('Location', '/')
-                ->withStatus(302);
-        }
-
-        return $this->view->render($response, 'login.php', [
-            'data' => $data,
-            'errors' => 'Invalid login'
+        return $this->view->render($response, 'profile.php', [
+            'api_key' => $api_key
         ]);
-    }
-
-    public function destroy(Request $request, Response $response): Response
-    {
-        session_destroy();
-
-        return $response
-            ->withHeader('Location', '/')
-            ->withStatus(302);
     }
 }

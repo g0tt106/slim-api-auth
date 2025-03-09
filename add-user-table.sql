@@ -1,17 +1,18 @@
-CREATE TABLE `product` (
-    `id` int(11) NOT NULL,
-    `name` varchar(128) NOT NULL,
-    `description` text DEFAULT NULL,
-    `size` int(11) NOT NULL
+CREATE TABLE `user` (
+    id int(11) NOT NULL,
+    name varchar(128) NOT NULL,
+    email varchar(255) NOT NULL,
+    password_hash varchar(255) NOT NULL,
+    api_key varchar(255) NOT NULL,
+    api_key_hash varchar(64) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-ALTER TABLE `product`
-    ADD PRIMARY KEY (`id`),
-    ADD KEY `name` (`name`);
 
-ALTER TABLE `product`
-    MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+ALTER TABLE user
+    ADD PRIMARY KEY (id),
+    ADD UNIQUE KEY email (email),
+    ADD UNIQUE KEY api_key_hash (api_key_hash);
 
-INSERT INTO `product` (`name`, `description`, `size`) VALUES
-    ('Product One', NULL, 10),
-    ('Product Two', 'example', 20);
+
+ALTER TABLE user
+    MODIFY id int(11) NOT NULL AUTO_INCREMENT;

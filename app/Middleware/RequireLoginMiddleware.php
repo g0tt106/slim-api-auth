@@ -19,40 +19,24 @@ class RequireLoginMiddleware
 
     public function __invoke(Request $request, RequestHandler $handler): Response
     {
-        // $params = $request->getQueryParams();
+        if (isset($_SESSION['user_id'])) {
 
-        // if ( ! array_key_exists('api-key', $params)) {
-        if ( ! $request->hasHeader('X-API-Key')) {
+            $user = $this->repository->find('id', $_SESSION['user_id']);
 
-            $response = $this->factory->createResponse();
+            if ($user) {
 
-            $response->getBody()
-                ->write(json_encode('api-key missing from request'));
+                $request = $request->withAttribute('user', $user);
 
-            return $response->withStatus(400);
+                return $handler->handle($request);
 
-        }
-
-        // if ($params['api-key'] !== 'abc123') {
-        $api_key = $request->getHeaderLine('X-API-Key');
-
-        $api_key_hash = hash_hmac('sha256', $api_key, $_ENV['HASH_SECRET_KEY']);
-
-        $user = $this->repository->find('api_key_hash', $api_key_hash);
-
-        if ($user === false) {
-
-            $response = $this->factory->createResponse();
-
-            $response->getBody()
-                ->write(json_encode('invalid API key'));
-
-            return $response->withStatus(401);
+            }
 
         }
 
-        $response = $handler->handle($request);
+        $response = $this->factory->createResponse();
 
-        return $response;
+        $response->getBody()->write('Unauthorised');
+
+        return $response->withStatus(401);
     }
 }

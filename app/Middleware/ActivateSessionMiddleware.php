@@ -14,8 +14,12 @@ class ActivateSessionMiddleware implements MiddlewareInterface
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        $response = $handler->handle($request);
+        if (session_status() !== PHP_SESSION_ACTIVE) {
 
-        return $response->withHeader('Content-Type', 'application/json');
+            session_start();
+        }
+
+        return $handler->handle($request);
+
     }
 }

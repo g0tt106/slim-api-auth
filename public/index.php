@@ -2,14 +2,9 @@
 
 declare(strict_types=1);
 
-use App\Controllers\ProductController;
-use App\Controllers\ProductIndexController;
-use App\Middleware\AddJsonResponseHeaderMiddleware;
-use App\Middleware\GetProductMiddleware;
 use DI\ContainerBuilder;
 use Slim\Factory\AppFactory;
 use Slim\Handlers\Strategies\RequestResponseArgs;
-use Slim\Routing\RouteCollectorProxy;
 
 define('APP_ROOT', dirname(__DIR__));
 
@@ -33,27 +28,9 @@ $collector->setDefaultInvocationStrategy(new RequestResponseArgs);
 $app->addBodyParsingMiddleware();
 
 $error_middleware = $app->addErrorMiddleware(true, true, true);
-$error_handler = $error_middleware->getDefaultErrorHandler();
-$error_handler->forceContentType('application/json');
 
-$app->add(AddJsonResponseHeaderMiddleware::class);
+$routes = require APP_ROOT . '/config/routes.php';
 
-$app->group('/api', function (RouteCollectorProxy $group) {
-
-    $group->get('/products', ProductIndexController::class);
-
-    $group->post('/products', [ProductController::class, 'create']);
-
-    $group->group('', function (RouteCollectorProxy $group) {
-
-        $group->get('/products/{id:[0-9]+}', ProductController::class . ':show');
-
-        $group->patch('/products/{id:[0-9]+}', ProductController::class . ':update');
-
-        $group->delete('/products/{id:[0-9]+}', ProductController::class . ':delete');
-
-    })->add(GetProductMiddleware::class);
-
-});
+$routes($app);
 
 $app->run();
